@@ -7,8 +7,8 @@
 //--------------------- PUBLIC FUNCTIONS --------------------------------------------
 
 /**
- * Allocate stack data with INIT_STACK_DATA_CAPACITY size and null values.
- * Turn isInitialized flag to 1.
+ * Allocates stack data with INIT_STACK_DATA_CAPACITY size and null values.
+ * Turns isInitialized flag to 1.
  * @param[out] stack pointer to stack (can't be NULL)
  * @return Error code (if ok return ReturnCode.OK)
  */
@@ -138,11 +138,6 @@ ReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream) {
     return ERR_STACK_NULLPTR;
   }
   fprintf(stream, "Stack (%p) {\n", stack);
-
-  iog_stack_value_t *data;  ///< Pointer to array with data
-  iog_flag_t isInitialized; ///< Flag of initialization
-  size_t size;              ///< Amount of valuable elements in data
-  size_t capacity;          ///< Size of allocated memory for data
 
   fprintf(stream, "  .isInitialized  = %d"  "\n",  (int) stack->isInitialized);
   fprintf(stream, "  .size           = %lu" "\n",  stack->size);

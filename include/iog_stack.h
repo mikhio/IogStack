@@ -1,5 +1,5 @@
-#ifndef IOG_STACK
-#define IOG_STACK
+#ifndef IOG_STACK_H
+#define IOG_STACK_H
 
 #include "return_codes.h"
 
@@ -7,10 +7,15 @@
 
 /// Macros for calling functions and return error if isn't OK.
 #define IOG_RETURN_IF_ERROR(func) { \
-  ReturnCode err = func;   \
-  if (err != OK)                             \
-    return err;                              \
+  ReturnCode err = func;            \
+  if (err != OK)                    \
+    return err;                     \
 }    
+
+#define IOG_CHECK_STACK_NULL (stack) { \
+  if (stack == NULL)                   \
+    return ERR_STACK_NULLPTR;          \
+}
 
 typedef double iog_stack_value_t; ///< Definition of stack element type
 typedef unsigned char iog_flag_t; ///< Definition of flag type;
@@ -48,4 +53,4 @@ ReturnCode iog_stack_verify (const IogStack_t *stack);               ///< Verify
 static ReturnCode iog_stack_allocate_more (IogStack_t *stack); ///< Allocates more memory for data
 static ReturnCode iog_stack_free_rest     (IogStack_t *stack); ///< Free all memory after stack size.
 
-#endif // IOG_STACK
+#endif // IOG_STACK_H

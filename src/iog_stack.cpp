@@ -13,7 +13,7 @@
  * @return Error code (if ok return ReturnCode.OK)
  */
 ReturnCode iog_stack_init(IogStack_t *stack) {
-  IOG_ASSERT(stack); 
+  IOG_CHECK_STACK_NULL( stack );
 
   if (stack->isInitialized)
     return ERR_STACK_ALREADY_INITIALIZED;
@@ -40,7 +40,7 @@ ReturnCode iog_stack_init(IogStack_t *stack) {
  * @return Error code (if ok return ReturnCode.OK)
  */
 ReturnCode iog_stack_destroy(IogStack_t *stack) {
-  IOG_ASSERT(stack);
+  IOG_CHECK_STACK_NULL( stack );
 
   free(stack->data);
 
@@ -59,8 +59,6 @@ ReturnCode iog_stack_destroy(IogStack_t *stack) {
  * @return Error code (if ok return ReturnCode.OK)
  */
 ReturnCode iog_stack_push (IogStack_t *stack, iog_stack_value_t value) {
-  IOG_ASSERT(stack);
-  
   IOG_RETURN_IF_ERROR( iog_stack_verify(stack) );
 
   if (stack->size == stack->capacity) {
@@ -80,7 +78,6 @@ ReturnCode iog_stack_push (IogStack_t *stack, iog_stack_value_t value) {
  * @return Error code (if ok return ReturnCode.OK)
  */
 ReturnCode iog_stack_pop (IogStack_t *stack, iog_stack_value_t *value) {
-  IOG_ASSERT(stack);
   IOG_ASSERT(value);
 
   IOG_RETURN_IF_ERROR( iog_stack_verify(stack) );
@@ -106,7 +103,6 @@ ReturnCode iog_stack_pop (IogStack_t *stack, iog_stack_value_t *value) {
  * @return Error code (if ok return ReturnCode.OK)
  */
 ReturnCode iog_stack_peek (const IogStack_t *stack, iog_stack_value_t *value) {
-  IOG_ASSERT(stack);
   IOG_ASSERT(value);
 
   IOG_RETURN_IF_ERROR( iog_stack_verify(stack) );
@@ -137,6 +133,7 @@ ReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream) {
     fprintf(stream, "Stack (null) {}\n");
     return ERR_STACK_NULLPTR;
   }
+
   fprintf(stream, "Stack (%p) {\n", stack);
 
   fprintf(stream, "  .isInitialized  = %d"  "\n",  (int) stack->isInitialized);
@@ -171,8 +168,7 @@ ReturnCode iog_stack_dump (const IogStack_t *stack) {
  * @return Error code (if ok return ReturnCode.OK)
  */
 ReturnCode iog_stack_verify (const IogStack_t *stack) {
-  if (stack == NULL)
-    return ERR_STACK_NULLPTR;
+  IOG_CHECK_STACK_NULL( stack );
 
   if (!stack->isInitialized)
     return ERR_STACK_ISNT_INITIALIZED;

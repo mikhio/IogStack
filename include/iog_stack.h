@@ -12,9 +12,13 @@
     return err;                     \
 }    
 
-#define IOG_CHECK_STACK_NULL (stack) { \
+#define IOG_CHECK_STACK_NULL(stack) {  \
   if (stack == NULL)                   \
     return ERR_STACK_NULLPTR;          \
+}
+
+#define IOG_STACK_DUMP(stack) {                                             \
+  iog_stack_dump_f(stack, stdout, #stack, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
 }
 
 typedef double iog_stack_value_t; ///< Definition of stack element type
@@ -41,8 +45,11 @@ ReturnCode iog_stack_push (IogStack_t *stack, iog_stack_value_t value);  ///< Ad
 ReturnCode iog_stack_pop  (IogStack_t *stack, iog_stack_value_t *value); ///< Read and remove value from stack
 
 ReturnCode iog_stack_peek (const IogStack_t *stack, iog_stack_value_t *value); ///< Read value from stack
-
-ReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream); ///< Print all stack info to stream (file) 
+                                                                               //
+/// Print all stack info to stream (file)
+ReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream,
+    const char *stk_name, const char *file_name, int line_num, const char *function_name);  
+                                                                     
 ReturnCode iog_stack_dump   (const IogStack_t *stack);               ///< Print all stack info to stdin 
 ReturnCode iog_stack_verify (const IogStack_t *stack);               ///< Verify stack
 

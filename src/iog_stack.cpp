@@ -117,24 +117,30 @@ ReturnCode iog_stack_peek (const IogStack_t *stack, iog_stack_value_t *value) {
 
 
 /**
- * @param[in] stack  pointer to stack
- * @param[in] stream pointer to stream for prints (can't be NULL)
+ * @param[in]  stack         pointer to stack
+ * @param[out] stream        pointer to stream for prints
+ * @param[in]  stk_name      name of dumping stack
+ * @param[in]  file_name     name of file from that called dump
+ * @param[in]  line_num      number of line from that called dump
+ * @param[in]  function_name name of function from that called dump
  * @return Error code (if ok return ReturnCode.OK)
  */
-ReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream) {
-      //const char *file_name, int line_num, const char *function_name) {
+ReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream,
+      const char *stk_name, const char *file_name, int line_num, const char *function_name) {
   IOG_ASSERT(stream);
 
+
   fprintf(stream, BLACK("------- STACK DUMP ---------" "\n"));
-  //fprintf(stream, BLACK("Dump called from %s: %s line %d\n"),
-  //   file_name, function_name, line_num);
+  fprintf(stream, BLUE("Called from %s:%d: %s\n"),
+     file_name, line_num, function_name
+  );
 
   if (stack == NULL) {
-    fprintf(stream, "Stack (null) {}\n");
+    fprintf(stream, BLACK("IogStack_t %s (null)") " {}\n", stk_name);
     return ERR_STACK_NULLPTR;
   }
 
-  fprintf(stream, "Stack (%p) {\n", stack);
+  fprintf(stream, BLACK("IogStack_t %s (%p)") " {\n", stk_name, stack);
 
   fprintf(stream, "  .isInitialized  = %d"  "\n",  (int) stack->isInitialized);
   fprintf(stream, "  .size           = %lu" "\n",  stack->size);
@@ -158,7 +164,7 @@ ReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream) {
  * @return Error code (if ok return ReturnCode.OK)
  */
 ReturnCode iog_stack_dump (const IogStack_t *stack) {
-  return iog_stack_dump_f(stack, stdout);
+  return iog_stack_dump_f(stack, stdout, NULL, NULL, 0, NULL);
 }
 
 

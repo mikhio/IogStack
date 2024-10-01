@@ -28,9 +28,16 @@ int main(const int argc, const char *argv[]) {
   printf("test_value (peek) = %lg\n", test_value);
 
   IOG_ERR( iog_stack_pop  (&stk, &test_value) );
+  IOG_STACK_DUMP (&stk);
+
   IOG_ERR( iog_stack_pop  (&stk, &test_value) );
+  IOG_STACK_DUMP (&stk);
+
   IOG_ERR( iog_stack_pop  (&stk, &test_value) );
+  IOG_STACK_DUMP (&stk);
+
   IOG_ERR( iog_stack_pop  (&stk, &test_value) );
+  IOG_STACK_DUMP (&stk);
 
   IOG_STACK_DUMP (&stk);
 

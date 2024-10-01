@@ -90,7 +90,7 @@ ReturnCode iog_stack_pop (IogStack_t *stack, iog_stack_value_t *value) {
   stack->data[stack->size-1] = 0;
   stack->size--;
 
-  if ((stack->size >= INIT_STACK_DATA_CAPACITY) && (stack->size < stack->capacity / 4)) {
+  if (stack->size <= stack->capacity / 4) {
     IOG_RETURN_IF_ERROR( iog_stack_free_rest(stack) );
   }
 
@@ -221,14 +221,20 @@ static ReturnCode iog_stack_allocate_more (IogStack_t *stack) {
 static ReturnCode iog_stack_free_rest (IogStack_t *stack) {
   IOG_RETURN_IF_ERROR (iog_stack_verify(stack) );
 
-  if (stack->size <= INIT_STACK_DATA_CAPACITY)
-    return ERR_CANT_FREE_DATA;
+  size_t new_capacity = stack->size;
 
-  stack->data = (iog_stack_value_t *) iog_recalloc (
-      stack->data, stack->capacity, stack->size, sizeof (iog_stack_value_t)
-  );
+  if (stack->size < INIT_STACK_DATA_CAPACITY)
+    new_capacity = INIT_STACK_DATA_CAPACITY;
 
-  stack->capacity = stack->size;
+
+  if (stack->capacity > new_capacity) {
+    stack->data = (iog_stack_value_t *) iog_recalloc (
+       stack->data, stack->capacity, new_capacity, sizeof (iog_stack_value_t)
+    );
+
+    stack->capacity = new_capacity;
+  }
+
 
   return OK;
 }

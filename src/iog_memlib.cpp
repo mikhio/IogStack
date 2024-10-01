@@ -21,10 +21,15 @@ void *iog_recalloc (void *ptr, size_t old_num,  size_t new_num, size_t elem_size
 
   void *new_ptr = calloc(new_num, elem_size);
 
-  if (ptr != NULL)
-    memcpy(new_ptr, ptr, old_num * elem_size);
+  if (ptr != NULL) {
+    if (old_num <= new_num)
+      memcpy(new_ptr, ptr, old_num * elem_size);
+    else
+      memcpy(new_ptr, ptr, new_num * elem_size);
+  }
   
   free(ptr);
+  ptr = NULL;
 
   return new_ptr;
 }

@@ -5,7 +5,7 @@
 #include <stdarg.h>
 
 
-/** @file IOG_Assert.h */
+/** @file iog_assert.h */
 
 #ifdef IOG_NDEBUG
 

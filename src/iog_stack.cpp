@@ -3,6 +3,7 @@
 #include "iog_assert.h"
 #include "iog_stack.h"
 #include "cli_colors.h"
+#include "iog_memlib.h"
 
 //--------------------- PUBLIC FUNCTIONS --------------------------------------------
 
@@ -201,7 +202,9 @@ ReturnCode iog_stack_verify (const IogStack_t *stack) {
 static ReturnCode iog_stack_allocate_more (IogStack_t *stack) {
   IOG_RETURN_IF_ERROR( iog_stack_verify(stack) );
 
-  iog_stack_value_t *tmp_ptr = (iog_stack_value_t *) realloc(stack->data, stack->capacity * 2 * sizeof (iog_stack_value_t));
+  iog_stack_value_t *tmp_ptr = (iog_stack_value_t *) iog_recalloc (
+      stack->data, stack->capacity, stack->capacity * 2, sizeof (iog_stack_value_t)
+  );
   if (tmp_ptr == NULL)
     return ERR_CANT_ALLOCATE_DATA;
 
@@ -221,7 +224,10 @@ static ReturnCode iog_stack_free_rest (IogStack_t *stack) {
   if (stack->size <= INIT_STACK_DATA_CAPACITY)
     return ERR_CANT_FREE_DATA;
 
-  stack->data = (iog_stack_value_t *) realloc(stack->data, stack->size * sizeof (iog_stack_value_t));
+  stack->data = (iog_stack_value_t *) iog_recalloc (
+      stack->data, stack->capacity, stack->size, sizeof (iog_stack_value_t)
+  );
+
   stack->capacity = stack->size;
 
   return OK;

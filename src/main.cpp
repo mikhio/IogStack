@@ -2,6 +2,7 @@
 
 #include "iog_stack.h"
 #include "cli_colors.h"
+#include "iog_stack_tests.h"
 
 #define IOG_ERR(func) {                                                  \
   ReturnCode err = func;                                                 \
@@ -41,8 +42,15 @@ int main(const int argc, const char *argv[]) {
 
   IOG_STACK_DUMP (&stk);
 
+  printf(MAGENTA("---------------- START TESTS -----------------\n"));
+
+  iog_stack_canaries_check(&stk);
+
+  printf(MAGENTA("---------------- END TESTS -----------------\n"));
+
   IOG_ERR( iog_stack_destroy(&stk) );
   IOG_STACK_DUMP(&stk);
+
 
   return 0;
 }

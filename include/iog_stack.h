@@ -36,10 +36,10 @@ const iog_uint64_t STACK_CANARY_CONST       = 0x1234DEAD; ///< Constant for cana
 struct IogStack_t {
   iog_uint64_t firstStackCanary;  ///< First stack canary equal constant + pointer
 
-  iog_stack_value_t *data;    ///< Pointer to array with data
-  iog_flag_t isInitialized;   ///< Flag of initialization
-  size_t size;                ///< Amount of valuable elements in data
-  size_t capacity;            ///< Size of allocated memory for data
+  iog_stack_value_t *data;        ///< Pointer to array with data
+  iog_flag_t isInitialized;       ///< Flag of initialization
+  size_t size;                    ///< Amount of valuable elements in data
+  size_t capacity;                ///< Size of allocated memory for data
                             
   iog_uint64_t secondStackCanary; ///< Second stack canary equal constant + pointer
 };
@@ -61,6 +61,7 @@ ReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream,
 ReturnCode iog_stack_dump   (const IogStack_t *stack);  ///< Print all stack info to stdin 
 ReturnCode iog_stack_verify (const IogStack_t *stack);  ///< Verify stack
 
+ReturnCode iog_stack_update_canaries (IogStack_t *stack); ///< Calculates stack canaries
 
 
 //--------------------- PRIVATE FUNCTIONS --------------------------------------------

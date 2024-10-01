@@ -20,7 +20,9 @@ enum ReturnCode {
   ERR_DEAD_FIRST_CANARY         = 10,
   ERR_DEAD_SECOND_CANARY        = 11,
 
-  NR_RETURN_CODE                = 12, ///< Last return code
+  ERR_TEST_FAILED               = 12,
+
+  NR_RETURN_CODE                = 13, ///< Last return code
 };
 
 #endif // RETURN_CODES_H

@@ -24,6 +24,9 @@ ReturnCode iog_stack_init(IogStack_t *stack) {
   if (tmp_data == NULL)
     return ERR_CANT_ALLOCATE_DATA;
 
+  stack->firstStackCanary =  STACK_CANARY_CONST + (iog_uint64_t) stack;
+  stack->secondStackCanary = STACK_CANARY_CONST + (iog_uint64_t) stack;
+
   stack->data = tmp_data;
   stack->size = 0;
   stack->capacity = INIT_STACK_DATA_CAPACITY;
@@ -143,10 +146,12 @@ ReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream,
 
   fprintf(stream, BLACK("IogStack_t %s (%p)") " {\n", stk_name, stack);
 
-  fprintf(stream, "  .isInitialized  = %d"  "\n",  (int) stack->isInitialized);
-  fprintf(stream, "  .size           = %lu" "\n",  stack->size);
-  fprintf(stream, "  .capacity       = %lu" "\n",  stack->capacity);
-  fprintf(stream, "  .data[%lu] (%p) = [",         stack->capacity, stack->data);
+  fprintf(stream, "  .firstStackCanary  = %llx"  "\n",  stack->firstStackCanary);
+
+  fprintf(stream, "  .isInitialized     = %d"    "\n",  (int) stack->isInitialized);
+  fprintf(stream, "  .size              = %lu"   "\n",  stack->size);
+  fprintf(stream, "  .capacity          = %lu"   "\n",  stack->capacity);
+  fprintf(stream, "  .data[%lu] (%p)    = [",           stack->capacity, stack->data);
 
   if (stack->data != NULL) {
     fprintf(stream, "\n");
@@ -155,6 +160,9 @@ ReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream,
   }
 
   fprintf(stream, "  ]\n");
+
+  fprintf(stream, "  .secondStackCanary = %llx"  "\n",  stack->secondStackCanary);
+
   fprintf(stream, "}\n");
 
   return OK;
@@ -177,6 +185,12 @@ ReturnCode iog_stack_dump (const IogStack_t *stack) {
 ReturnCode iog_stack_verify (const IogStack_t *stack) {
   IOG_CHECK_STACK_NULL( stack );
 
+  if ((stack->firstStackCanary - STACK_CANARY_CONST) != (iog_uint64_t) stack)
+    return ERR_DEAD_FIRST_CANARY;
+
+  if ((stack->secondStackCanary - STACK_CANARY_CONST) != (iog_uint64_t) stack)
+    return ERR_DEAD_SECOND_CANARY;
+
   if (!stack->isInitialized)
     return ERR_STACK_ISNT_INITIALIZED;
   
@@ -188,6 +202,8 @@ ReturnCode iog_stack_verify (const IogStack_t *stack) {
 
   if (stack->data == NULL)
     return ERR_STACK_DATA_NULLPTR;
+
+
 
   return OK;
 }

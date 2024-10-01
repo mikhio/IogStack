@@ -17,8 +17,10 @@ enum ReturnCode {
   ERR_STACK_CAPACITY_UNDERFLOW  = 7,
   ERR_STACK_NULLPTR             = 8,
   ERR_STACK_DATA_NULLPTR        = 9,
+  ERR_DEAD_FIRST_CANARY         = 10,
+  ERR_DEAD_SECOND_CANARY        = 11,
 
-  NR_RETURN_CODE                = 10, ///< Last return code
+  NR_RETURN_CODE                = 12, ///< Last return code
 };
 
 #endif // RETURN_CODES_H

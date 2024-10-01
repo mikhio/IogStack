@@ -23,19 +23,25 @@
   iog_stack_dump_f(stack, stdout, #stack, __FILE__, __LINE__, __PRETTY_FUNCTION__); \
 }
 
-typedef double iog_stack_value_t; ///< Definition of stack element type
-typedef unsigned char iog_flag_t; ///< Definition of flag type;
+typedef double             iog_stack_value_t; ///< Definition of stack element type
+typedef unsigned char      iog_flag_t;        ///< Definition of flag type;
+typedef unsigned long long iog_uint64_t;      ///< Definition of my iog_uint64_t
                                   
-const size_t INIT_STACK_DATA_CAPACITY = 4; ///< Constant with init capacity 
+const size_t   INIT_STACK_DATA_CAPACITY = 4;          ///< Constant with init capacity 
+const iog_uint64_t STACK_CANARY_CONST       = 0x1234DEAD; ///< Constant for canary mask
 
 /** @struct IogStack_t
  * Defines stack structure
  */
 struct IogStack_t {
-  iog_stack_value_t *data;  ///< Pointer to array with data
-  iog_flag_t isInitialized; ///< Flag of initialization
-  size_t size;              ///< Amount of valuable elements in data
-  size_t capacity;          ///< Size of allocated memory for data
+  iog_uint64_t firstStackCanary;  ///< First stack canary equal constant + pointer
+
+  iog_stack_value_t *data;    ///< Pointer to array with data
+  iog_flag_t isInitialized;   ///< Flag of initialization
+  size_t size;                ///< Amount of valuable elements in data
+  size_t capacity;            ///< Size of allocated memory for data
+                            
+  iog_uint64_t secondStackCanary; ///< Second stack canary equal constant + pointer
 };
 
 //--------------------- PUBLIC FUNCTIONS --------------------------------------------
@@ -52,8 +58,8 @@ ReturnCode iog_stack_peek (const IogStack_t *stack, iog_stack_value_t *value); /
 ReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream,
     const char *stk_name, const char *file_name, int line_num, const char *function_name);  
                                                                      
-ReturnCode iog_stack_dump   (const IogStack_t *stack);               ///< Print all stack info to stdin 
-ReturnCode iog_stack_verify (const IogStack_t *stack);               ///< Verify stack
+ReturnCode iog_stack_dump   (const IogStack_t *stack);  ///< Print all stack info to stdin 
+ReturnCode iog_stack_verify (const IogStack_t *stack);  ///< Verify stack
 
 
 

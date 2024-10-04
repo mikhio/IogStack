@@ -10,7 +10,7 @@
 /**
  * Allocates stack data with INIT_STACK_DATA_CAPACITY size and null values.
  * Turns isInitialized flag to 1.
- * @param[out] stack pointer to stack (can't be NULL)
+ * @param[out] stack pointer to stack
  * @return Error code (if ok return ReturnCode.OK)
  */
 ReturnCode iog_stack_init(IogStack_t *stack) {
@@ -19,18 +19,17 @@ ReturnCode iog_stack_init(IogStack_t *stack) {
   if (stack->isInitialized)
     return ERR_STACK_ALREADY_INITIALIZED;
 
-  iog_stack_value_t *tmp_data = (iog_stack_value_t *) calloc(INIT_STACK_DATA_CAPACITY, sizeof (iog_stack_value_t));
-
-  if (tmp_data == NULL)
-    return ERR_CANT_ALLOCATE_DATA;
-
+  stack->size = 0;
+  
+  ReturnCode alloc_err = iog_stack_allocate_data(stack, INIT_STACK_DATA_CAPACITY);
+  if (alloc_err != OK) {
+    iog_stack_destroy(stack);
+    return alloc_err;
+  }
+    
   iog_stack_update_canaries(stack);
 
-  stack->data = tmp_data;
-  stack->size = 0;
-  stack->capacity = INIT_STACK_DATA_CAPACITY;
   stack->isInitialized = 1;
-
 
   IOG_RETURN_IF_ERROR( iog_stack_verify(stack) );
 
@@ -39,7 +38,7 @@ ReturnCode iog_stack_init(IogStack_t *stack) {
 
 /**
  * Frees data and reset stack to zero
- * @param[out] stack pointer to stack (can't be NULL)
+ * @param[out] stack pointer to stack
  * @return Error code (if ok return ReturnCode.OK)
  */
 ReturnCode iog_stack_destroy(IogStack_t *stack) {
@@ -76,8 +75,8 @@ ReturnCode iog_stack_push (IogStack_t *stack, iog_stack_value_t value) {
 
 /**
  * If size less 1/4 of capacity then frees rest memory.
- * @param[out] stack pointer to stack (can't be NULL)
- * @param[out] value pointer to variable in which want to write
+ * @param[out] stack pointer to stack
+ * @param[out] value pointer to variable in which want to write (can't be null)
  * @return Error code (if ok return ReturnCode.OK)
  */
 ReturnCode iog_stack_pop (IogStack_t *stack, iog_stack_value_t *value) {
@@ -153,7 +152,7 @@ ReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream,
   fprintf(stream, "  .isInitialized     = %d"    "\n",  (int) stack->isInitialized);
   fprintf(stream, "  .size              = %lu"   "\n",  stack->size);
   fprintf(stream, "  .capacity          = %lu"   "\n",  stack->capacity);
-  fprintf(stream, "  .data[%lu] (%p)    = [",           stack->capacity, stack->data);
+  fprintf(stream, "  .data[%lu] (%p)" " = [",           stack->capacity, stack->data);
 
   if (stack->data != NULL) {
     fprintf(stream, "\n");
@@ -229,46 +228,58 @@ ReturnCode iog_stack_update_canaries (IogStack_t *stack) {
 //--------------------- PRIVATE FUNCTIONS --------------------------------------------
 
 /**
- * Double capacity by allocating more memory
- * @param[out] stack pointer to stack
+ * Allocates max( new_capacity, INIT_STACK_DATA_CAPACITY ).
+ * Can't free data, for that use destroy.
+ * @param[in] stack        pointer to stack
+ * @param[in] new_capacity new capacity of stack data
  * @return Error code (if ok return ReturnCode.OK)
  */
-static ReturnCode iog_stack_allocate_more (IogStack_t *stack) {
-  IOG_RETURN_IF_ERROR( iog_stack_verify(stack) );
+static ReturnCode iog_stack_allocate_data (IogStack_t *stack, size_t new_capacity) {
+  IOG_CHECK_STACK_NULL(stack);
+
+  if (new_capacity < INIT_STACK_DATA_CAPACITY)
+      new_capacity = INIT_STACK_DATA_CAPACITY;
 
   iog_stack_value_t *tmp_ptr = (iog_stack_value_t *) iog_recalloc (
-      stack->data, stack->capacity, stack->capacity * 2, sizeof (iog_stack_value_t)
+      stack->data, stack->capacity, new_capacity, sizeof (iog_stack_value_t)
   );
+
   if (tmp_ptr == NULL)
     return ERR_CANT_ALLOCATE_DATA;
 
   stack->data = tmp_ptr;
-  stack->capacity *= 2;
+  stack->capacity = new_capacity;
 
   return OK;
 }
 
 /**
- * @param[out] stack pointer to stack
+ * Double capacity by allocating more memory
+ * @param[in] stack pointer to stack
+ * @return Error code (if ok return ReturnCode.OK)
+ */
+static ReturnCode iog_stack_allocate_more (IogStack_t *stack) {
+  IOG_RETURN_IF_ERROR( iog_stack_verify(stack) );
+
+  if (iog_stack_allocate_data(stack, stack->capacity * 2) != OK)
+    return ERR_CANT_ALLOCATE_DATA;
+
+  IOG_RETURN_IF_ERROR( iog_stack_verify(stack) );
+
+  return OK;
+}
+
+/**
+ * @param[in] stack pointer to stack
  * @return Error code (if ok return ReturnCode.OK)
  */
 static ReturnCode iog_stack_free_rest (IogStack_t *stack) {
   IOG_RETURN_IF_ERROR (iog_stack_verify(stack) );
 
-  size_t new_capacity = stack->size;
+  if (iog_stack_allocate_data(stack, stack->size) != OK)
+    return ERR_CANT_FREE_DATA;
 
-  if (stack->size < INIT_STACK_DATA_CAPACITY)
-    new_capacity = INIT_STACK_DATA_CAPACITY;
-
-
-  if (stack->capacity > new_capacity) {
-    stack->data = (iog_stack_value_t *) iog_recalloc (
-       stack->data, stack->capacity, new_capacity, sizeof (iog_stack_value_t)
-    );
-
-    stack->capacity = new_capacity;
-  }
-
+  IOG_RETURN_IF_ERROR( iog_stack_verify(stack) );
 
   return OK;
 }

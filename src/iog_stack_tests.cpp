@@ -5,6 +5,11 @@
 #include "return_codes.h"
 #include "cli_colors.h"
 
+
+/**
+ * @param[in] stack pointer to stack
+ * @return Error code (if ok return ReturnCode.OK)
+ */
 ReturnCode iog_stack_canaries_check (const IogStack_t *stack) {
   ReturnCode err = iog_stack_verify(stack);
   if (err != OK) {

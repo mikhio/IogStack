@@ -27,7 +27,7 @@ typedef double             iog_stack_value_t; ///< Definition of stack element t
 typedef unsigned char      iog_flag_t;        ///< Definition of flag type;
 typedef unsigned long long iog_uint64_t;      ///< Definition of my iog_uint64_t
                                   
-const size_t   INIT_STACK_DATA_CAPACITY = 4;          ///< Constant with init capacity 
+const size_t       INIT_STACK_DATA_CAPACITY = 4;          ///< Constant with init capacity 
 const iog_uint64_t STACK_CANARY_CONST       = 0x1234DEAD; ///< Constant for canary mask
 
 /** @struct IogStack_t
@@ -65,6 +65,9 @@ ReturnCode iog_stack_update_canaries (IogStack_t *stack); ///< Calculates stack 
 
 
 //--------------------- PRIVATE FUNCTIONS --------------------------------------------
+
+/// Reallocates data of stack
+static ReturnCode iog_stack_allocate_data (IogStack_t *stack, size_t new_capacity);
 
 static ReturnCode iog_stack_allocate_more (IogStack_t *stack); ///< Allocates more memory for data
 static ReturnCode iog_stack_free_rest     (IogStack_t *stack); ///< Free all memory after stack size.

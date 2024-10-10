@@ -38,8 +38,8 @@ struct IogStack_t {
 
   iog_stack_value_t *data;        ///< Pointer to array with data
   iog_flag_t isInitialized;       ///< Flag of initialization
-  size_t size;                    ///< Amount of valuable elements in data
-  size_t capacity;                ///< Size of allocated memory for data
+  int size;                       ///< Amount of valuable elements in data
+  int capacity;                   ///< Size of allocated memory for data
                             
   iog_uint64_t secondStackCanary; ///< Second stack canary equal constant + pointer
 };

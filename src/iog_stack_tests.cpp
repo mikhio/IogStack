@@ -47,7 +47,7 @@ ReturnCode iog_stack_canaries_check (const IogStack_t *stack) {
   iog_stack_update_canaries(&ctest2.stack);
 
   ReturnCode secondTestErr = OK;
-  for (size_t i = 0; i < 20; i++) {
+  for (size_t i = 0; i < 30; i++) {
     secondTestErr = iog_stack_verify(&ctest2.stack);
     if (secondTestErr == ERR_DEAD_SECOND_CANARY) {
       fprintf(stderr, GREEN("Canary died after %lu iterations\n"), i);

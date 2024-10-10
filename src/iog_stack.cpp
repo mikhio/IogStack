@@ -83,7 +83,6 @@ ReturnCode iog_stack_pop (IogStack_t *stack, iog_stack_value_t *value) {
   IOG_ASSERT(value);
 
   IOG_RETURN_IF_ERROR( iog_stack_verify(stack) );
-
   if (stack->size == 0)
     return ERR_STACK_UNDERFLOW;
 
@@ -150,9 +149,9 @@ ReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream,
   );
 
   fprintf(stream, "  .isInitialized     = %d"    "\n",  (int) stack->isInitialized);
-  fprintf(stream, "  .size              = %lu"   "\n",  stack->size);
-  fprintf(stream, "  .capacity          = %lu"   "\n",  stack->capacity);
-  fprintf(stream, "  .data[%lu] (%p)" " = [",           stack->capacity, stack->data);
+  fprintf(stream, "  .size              = %d"   "\n",   stack->size);
+  fprintf(stream, "  .capacity          = %d"   "\n",   stack->capacity);
+  fprintf(stream, "  .data[%d] (%p)" " = [",            stack->capacity, stack->data);
 
   if (stack->data != NULL) {
     fprintf(stream, "\n");

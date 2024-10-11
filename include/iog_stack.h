@@ -25,23 +25,28 @@
 
 typedef double             iog_stack_value_t; ///< Definition of stack element type
 typedef unsigned char      iog_flag_t;        ///< Definition of flag type;
-typedef unsigned long long iog_uint64_t;      ///< Definition of my iog_uint64_t
+typedef unsigned long long iog_uint64_t;      ///< Definition of my uint64_t
+typedef iog_uint64_t       iog_canary_t;      ///< Definition of my canary type
                                   
-const size_t       INIT_STACK_DATA_CAPACITY = 4;          ///< Constant with init capacity 
-const iog_uint64_t STACK_CANARY_CONST       = 0x1234DEAD; ///< Constant for canary mask
+const size_t        INIT_STACK_DATA_CAPACITY = 4;          ///< Constant with init capacity 
+const iog_canary_t  DATA_CANARY_CONST        = 0x1234DEAD; ///< Constant for data canary mask
+const iog_canary_t  STACK_CANARY_CONST       = 0x1234DEAD; ///< Constant for stack canary mask
 
 /** @struct IogStack_t
  * Defines stack structure
  */
 struct IogStack_t {
-  iog_uint64_t firstStackCanary;  ///< First stack canary equal constant + pointer
+  iog_canary_t firstStackCanary;  ///< First stack canary equal constant + pointer
 
+  iog_canary_t *firstDataCanary;  ///< Pointer to first data canary
   iog_stack_value_t *data;        ///< Pointer to array with data
+  iog_canary_t *secondDataCanary; ///< Pointer to second data canary
+                                  
   iog_flag_t isInitialized;       ///< Flag of initialization
   size_t size;                    ///< Amount of valuable elements in data
   size_t capacity;                ///< Size of allocated memory for data
                             
-  iog_uint64_t secondStackCanary; ///< Second stack canary equal constant + pointer
+  iog_canary_t secondStackCanary; ///< Second stack canary equal constant + pointer
 };
 
 //--------------------- PUBLIC FUNCTIONS --------------------------------------------

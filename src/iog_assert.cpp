@@ -24,3 +24,14 @@ void iog_assert_func(int flag, const char *expr,
   }
 
 }
+
+void iog_print_ram (void *start_ptr, size_t bytes_num) {
+  fprintf(stderr, RED("---------- RAM ---------------\n"));
+
+  for (size_t i = 0; i < bytes_num; i++) {
+    unsigned char *cur_ptr = (unsigned char *)start_ptr + i;
+    fprintf(stderr, BLACK("%p:") BLUE("  %X\n"), cur_ptr, *cur_ptr);
+  }
+
+  fprintf(stderr, RED("-----------------------------\n"));
+}

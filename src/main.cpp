@@ -3,17 +3,19 @@
 #include "iog_stack.h"
 #include "cli_colors.h"
 #include "iog_stack_tests.h"
+#include "iog_assert.h"
 
 #define IOG_ERR(func) {                                                  \
   ReturnCode err = func;                                                 \
   if (err != OK)                                                         \
-      fprintf(stderr, RED("line %d: " #func " = %d\n"), __LINE__, func); \
+      fprintf(stderr, RED("line %d: " #func " = %d\n"), __LINE__, err);  \
 }
 
 int main(const int argc, const char *argv[]) {
   IogStack_t stk = {};
 
   IOG_ERR( iog_stack_init(&stk) );
+
   IOG_STACK_DUMP(&stk);
 
   IOG_ERR( iog_stack_push(&stk, 8.5) );
@@ -27,20 +29,10 @@ int main(const int argc, const char *argv[]) {
 
   IOG_ERR( iog_stack_peek (&stk, &test_value) );
   printf("test_value (peek) = %lg\n", test_value);
-
   IOG_ERR( iog_stack_pop  (&stk, &test_value) );
+  printf("test_value (pop)  = %lg\n", test_value);
   IOG_STACK_DUMP (&stk);
 
-  IOG_ERR( iog_stack_pop  (&stk, &test_value) );
-  IOG_STACK_DUMP (&stk);
-
-  IOG_ERR( iog_stack_pop  (&stk, &test_value) );
-  IOG_STACK_DUMP (&stk);
-
-  IOG_ERR( iog_stack_pop  (&stk, &test_value) );
-  IOG_STACK_DUMP (&stk);
-
-  IOG_STACK_DUMP (&stk);
 
   printf(MAGENTA("---------------- START TESTS -----------------\n"));
 

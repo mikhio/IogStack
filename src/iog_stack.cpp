@@ -16,8 +16,9 @@
 ReturnCode iog_stack_init(IogStack_t *stack) {
   IOG_CHECK_STACK_NULL( stack );
 
-  if (stack->isInitialized)
+  if (stack->isInitialized) {
     return ERR_STACK_ALREADY_INITIALIZED;
+  }
 
   stack->size = 0;
   
@@ -31,7 +32,7 @@ ReturnCode iog_stack_init(IogStack_t *stack) {
 
   stack->isInitialized = 1;
 
-  IOG_RETURN_IF_ERROR( iog_stack_verify(stack) );
+  IOG_RETURN_IF_ERROR(iog_stack_verify(stack));
 
   return OK;
 }
@@ -44,9 +45,15 @@ ReturnCode iog_stack_init(IogStack_t *stack) {
 ReturnCode iog_stack_destroy(IogStack_t *stack) {
   IOG_CHECK_STACK_NULL( stack );
 
-  free(stack->data);
+  free(stack->firstDataCanary);
 
-  stack->data = 0;
+  stack->data = NULL;
+  stack->firstDataCanary  = NULL;
+  stack->secondDataCanary = NULL;
+
+  stack->firstStackCanary  = 0;
+  stack->secondStackCanary = 0;
+
   stack->size = 0;
   stack->capacity = 0;
   stack->isInitialized = 0;
@@ -69,6 +76,8 @@ ReturnCode iog_stack_push (IogStack_t *stack, iog_stack_value_t value) {
 
   stack->data[stack->size] = value;
   stack->size++;
+
+  IOG_RETURN_IF_ERROR( iog_stack_verify(stack) );
 
   return OK;
 }
@@ -114,6 +123,8 @@ ReturnCode iog_stack_peek (const IogStack_t *stack, iog_stack_value_t *value) {
    
   *value = stack->data[stack->size-1];
 
+  IOG_RETURN_IF_ERROR( iog_stack_verify(stack) );
+
   return OK;
 }
 
@@ -132,7 +143,7 @@ ReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream,
   IOG_ASSERT(stream);
 
 
-  fprintf(stream, BLACK("------- STACK DUMP ---------" "\n"));
+  fprintf(stream, BLACK("------------ STACK DUMP ------------" "\n"));
   fprintf(stream, BLUE("Called from %s:%d: %s\n"),
      file_name, line_num, function_name
   );
@@ -142,32 +153,51 @@ ReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream,
     return ERR_STACK_NULLPTR;
   }
 
-  fprintf(stream, BLACK("IogStack_t %s (%p)") " {\n", stk_name, stack);
+  fprintf(stream, BLACK("IogStack_t %s (%p) {\n"), stk_name, stack);
 
-  fprintf(stream, "  .firstStackCanary  = 0x%llx"  "\n",  stack->firstStackCanary);
-  fprintf(stream, "   (canary - const   = 0x%llx)" "\n",
+  fprintf(stream, BLACK("  .firstStackCanary  = 0x%llx")  "\n",  stack->firstStackCanary);
+  fprintf(stream, BLACK("   (canary - const   = 0x%llx)") "\n",
       stack->firstStackCanary - STACK_CANARY_CONST
   );
 
-  fprintf(stream, "  .isInitialized     = %d"    "\n",  (int) stack->isInitialized);
-  fprintf(stream, "  .size              = %lu"   "\n",  stack->size);
-  fprintf(stream, "  .capacity          = %lu"   "\n",  stack->capacity);
-  fprintf(stream, "  .data[%lu] (%p)" " = [",           stack->capacity, stack->data);
+  fprintf(stream, BLACK("  .isInitialized     = %d")    "\n",  (int) stack->isInitialized);
+  fprintf(stream, BLACK("  .size              = %lu")   "\n",  stack->size);
+  fprintf(stream, BLACK("  .capacity          = %lu")   "\n",  stack->capacity);
+
+  fprintf(stream, BLACK("  .firstDataCanary  = %p")  "\n",  stack->firstDataCanary);
+  if (stack->firstDataCanary != NULL) {
+    fprintf(stream, BLACK("  *firstDataCanary  = 0x%llx")  "\n",  *stack->firstDataCanary);
+    fprintf(stream, BLACK("   (canary - const  = 0x%llx)") "\n",
+        *stack->firstDataCanary - DATA_CANARY_CONST
+    );
+  }
+
+  fprintf(stream, BLACK("  .data[%lu] (%p)" " = ["),           stack->capacity, stack->data);
 
   if (stack->data != NULL) {
     fprintf(stream, "\n");
     for (size_t i = 0; i < stack->capacity; i++)
-      fprintf(stream, "    [%lu]: %lg\n", i, stack->data[i]);
+      fprintf(stream, BLACK("    [%lu]: %lg\n"), i, stack->data[i]);
   }
 
   fprintf(stream, "  ]\n");
 
-  fprintf(stream, "  .secondStackCanary = 0x%llx"  "\n",  stack->secondStackCanary);
-  fprintf(stream, "   (canary - const   = 0x%llx)" "\n",
+  fprintf(stream, BLACK("  .secondDataCanary  = %p")  "\n",  stack->secondDataCanary);
+  if (stack->secondDataCanary != NULL) {
+    fprintf(stream, BLACK("  *secondDataCanary  = 0x%llx")  "\n",  *stack->secondDataCanary);
+    fprintf(stream, BLACK("   (canary - const   = 0x%llx)") "\n",
+       *stack->secondDataCanary - DATA_CANARY_CONST
+    );
+  }
+
+  fprintf(stream, BLACK("  .secondStackCanary = 0x%llx")  "\n",  stack->secondStackCanary);
+  fprintf(stream, BLACK("   (canary - const   = 0x%llx)") "\n",
       stack->secondStackCanary - STACK_CANARY_CONST
   );
 
-  fprintf(stream, "}\n");
+  fprintf(stream, BLACK("}\n"));
+
+  fprintf(stream, BLACK("------------------------------------\n"));
 
   return OK;
 }
@@ -189,10 +219,10 @@ ReturnCode iog_stack_dump (const IogStack_t *stack) {
 ReturnCode iog_stack_verify (const IogStack_t *stack) {
   IOG_CHECK_STACK_NULL( stack );
 
-  if ((stack->firstStackCanary - STACK_CANARY_CONST) != (iog_uint64_t) stack)
+  if ((stack->firstStackCanary - STACK_CANARY_CONST) != (iog_canary_t) stack)
     return ERR_DEAD_FIRST_CANARY;
 
-  if ((stack->secondStackCanary - STACK_CANARY_CONST) != (iog_uint64_t) stack)
+  if ((stack->secondStackCanary - STACK_CANARY_CONST) != (iog_canary_t) stack)
     return ERR_DEAD_SECOND_CANARY;
 
   if (!stack->isInitialized)
@@ -207,6 +237,18 @@ ReturnCode iog_stack_verify (const IogStack_t *stack) {
   if (stack->data == NULL)
     return ERR_STACK_DATA_NULLPTR;
 
+  if (stack->firstDataCanary == NULL)
+    return ERR_FIRST_DATA_CANARY_NULLPTR;
+
+  if (stack->secondDataCanary == NULL)
+    return ERR_SECOND_DATA_CANARY_NULLPTR;
+
+  //fprintf(stderr, BLACK("-- verify: %llx %llx\n"), (*stack->firstDataCanary - DATA_CANARY_CONST), (iog_canary_t) stack->data);
+  if ((*stack->firstDataCanary - DATA_CANARY_CONST) != (iog_canary_t) stack->data)
+    return ERR_DEAD_FIRST_DATA_CANARY;
+
+  if ((*stack->secondDataCanary - DATA_CANARY_CONST) != (iog_canary_t) stack->data)
+    return ERR_DEAD_SECOND_DATA_CANARY;
 
 
   return OK;
@@ -219,8 +261,21 @@ ReturnCode iog_stack_verify (const IogStack_t *stack) {
 ReturnCode iog_stack_update_canaries (IogStack_t *stack) {
   IOG_CHECK_STACK_NULL( stack );
 
-  stack->firstStackCanary =  STACK_CANARY_CONST + (iog_uint64_t) stack;
-  stack->secondStackCanary = STACK_CANARY_CONST + (iog_uint64_t) stack;
+  stack->firstStackCanary  = STACK_CANARY_CONST + (iog_canary_t) stack;
+  stack->secondStackCanary = STACK_CANARY_CONST + (iog_canary_t) stack;
+
+  if (stack->data == NULL)
+    return ERR_STACK_DATA_NULLPTR;
+
+  if (stack->firstDataCanary == NULL)
+    return ERR_FIRST_DATA_CANARY_NULLPTR;
+
+  if (stack->secondDataCanary == NULL)
+    return ERR_SECOND_DATA_CANARY_NULLPTR;
+
+  
+  *stack->firstDataCanary  = DATA_CANARY_CONST + (iog_canary_t) stack->data;
+  *stack->secondDataCanary = DATA_CANARY_CONST + (iog_canary_t) stack->data;
 
   return OK;
 }
@@ -240,14 +295,26 @@ static ReturnCode iog_stack_allocate_data (IogStack_t *stack, size_t new_capacit
   if (new_capacity < INIT_STACK_DATA_CAPACITY)
       new_capacity = INIT_STACK_DATA_CAPACITY;
 
-  iog_stack_value_t *tmp_ptr = (iog_stack_value_t *) iog_recalloc (
-      stack->data, stack->capacity, new_capacity, sizeof (iog_stack_value_t)
+  if (stack->firstDataCanary != NULL)
+    *stack->firstDataCanary = 0;
+
+  if (stack->secondDataCanary != NULL)
+    *stack->secondDataCanary = 0;
+
+  iog_canary_t *tmp_ptr = (iog_canary_t *) iog_recalloc (
+      stack->firstDataCanary,
+      2 * sizeof(iog_canary_t) + stack->capacity * sizeof(iog_stack_value_t),
+      2 * sizeof(iog_canary_t) + new_capacity * sizeof(iog_stack_value_t),
+      1
   );
 
   if (tmp_ptr == NULL)
     return ERR_CANT_ALLOCATE_DATA;
 
-  stack->data = tmp_ptr;
+  stack->firstDataCanary = tmp_ptr;
+  stack->data = (iog_stack_value_t *) (tmp_ptr + 1);
+  stack->secondDataCanary = (iog_canary_t *) (stack->data + new_capacity);
+
   stack->capacity = new_capacity;
 
   return OK;
@@ -264,6 +331,8 @@ static ReturnCode iog_stack_allocate_more (IogStack_t *stack) {
   if (iog_stack_allocate_data(stack, stack->capacity * 2) != OK)
     return ERR_CANT_ALLOCATE_DATA;
 
+  iog_stack_update_canaries(stack);
+
   IOG_RETURN_IF_ERROR( iog_stack_verify(stack) );
 
   return OK;
@@ -278,6 +347,8 @@ static ReturnCode iog_stack_free_rest (IogStack_t *stack) {
 
   if (iog_stack_allocate_data(stack, stack->size) != OK)
     return ERR_CANT_FREE_DATA;
+
+  iog_stack_update_canaries(stack);
 
   IOG_RETURN_IF_ERROR( iog_stack_verify(stack) );
 

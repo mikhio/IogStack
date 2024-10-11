@@ -25,5 +25,6 @@
 
 /// My assert function
 void iog_assert_func(int x, const char *expr, const char *file, unsigned int line, const char *function);
+void iog_print_ram  (void *start_ptr, size_t bytes_num);
 
 #endif // IOG_ASSERT_H

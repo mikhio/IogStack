@@ -180,7 +180,7 @@ ReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream,
       fprintf(stream, BLACK("    [%lu]: %lg\n"), i, stack->data[i]);
   }
 
-  fprintf(stream, "  ]\n");
+  fprintf(stream, BLACK("  ]\n"));
 
   fprintf(stream, BLACK("  .secondDataCanary  = %p")  "\n",  stack->secondDataCanary);
   if (stack->secondDataCanary != NULL) {

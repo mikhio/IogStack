@@ -6,7 +6,7 @@
 /* @enum ReturnCode
  * Defines error code of function
  */
-enum ReturnCode {
+enum IogStackReturnCode {
   OK                               = 0, ///< All ok
 
   ERR_STACK_ALREADY_INITIALIZED    = 1,

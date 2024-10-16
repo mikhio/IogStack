@@ -6,7 +6,7 @@
 #include "iog_assert.h"
 
 #define IOG_ERR(func) {                                                  \
-  ReturnCode err = func;                                                 \
+  IogStackReturnCode err = func;                                                 \
   if (err != OK)                                                         \
       fprintf(stderr, RED("line %d: " #func " = %d\n"), __LINE__, err);  \
 }

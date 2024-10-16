@@ -2,23 +2,23 @@
 
 #include "iog_stack_tests.h"
 #include "iog_stack.h"
-#include "return_codes.h"
+#include "iog_stack_return_codes.h"
 #include "cli_colors.h"
 
 
 /**
  * @param[in] stack pointer to stack
- * @return Error code (if ok return ReturnCode.OK)
+ * @return Error code (if ok return IogStackReturnCode.OK)
  */
-ReturnCode iog_stack_canaries_check (const IogStack_t *stack) {
+IogStackReturnCode iog_stack_canaries_check (const IogStack_t *stack) {
   iog_check_first_stack_canary(stack);
   iog_check_second_stack_canary(stack);
 
   return OK;
 }
 
-ReturnCode iog_check_first_stack_canary(const IogStack_t *stack) {
-  ReturnCode err = iog_stack_verify(stack);
+IogStackReturnCode iog_check_first_stack_canary(const IogStack_t *stack) {
+  IogStackReturnCode err = iog_stack_verify(stack);
   if (err != OK) {
     fprintf(stderr, RED("Error: ") "stack is already broken with code: %d\n", err);
     return err;
@@ -27,7 +27,7 @@ ReturnCode iog_check_first_stack_canary(const IogStack_t *stack) {
   IogStackCanaryTest_t ctest1 = {0, *stack, 0};
   iog_stack_update_canaries(&ctest1.stack);
 
-  ReturnCode firstTestErr = OK;
+  IogStackReturnCode firstTestErr = OK;
   for (size_t i = 0; i < 20; i++) {
     firstTestErr = iog_stack_verify(&ctest1.stack);
     if (firstTestErr == ERR_DEAD_FIRST_CANARY) {
@@ -50,8 +50,8 @@ ReturnCode iog_check_first_stack_canary(const IogStack_t *stack) {
   return OK;
 }
 
-ReturnCode iog_check_second_stack_canary(const IogStack_t *stack) {
-  ReturnCode err = iog_stack_verify(stack);
+IogStackReturnCode iog_check_second_stack_canary(const IogStack_t *stack) {
+  IogStackReturnCode err = iog_stack_verify(stack);
   if (err != OK) {
     fprintf(stderr, RED("Error: ") "stack is already broken with code: %d\n", err);
     return err;
@@ -60,7 +60,7 @@ ReturnCode iog_check_second_stack_canary(const IogStack_t *stack) {
   IogStackCanaryTest_t ctest2 = {0, *stack, 0};
   iog_stack_update_canaries(&ctest2.stack);
 
-  ReturnCode secondTestErr = OK;
+  IogStackReturnCode secondTestErr = OK;
   for (size_t i = 0; i < 20; i++) {
     secondTestErr = iog_stack_verify(&ctest2.stack);
     if (secondTestErr == ERR_DEAD_SECOND_CANARY) {
@@ -83,10 +83,10 @@ ReturnCode iog_check_second_stack_canary(const IogStack_t *stack) {
   return OK;
 }
 
-ReturnCode iog_check_first_data_canary() {
+IogStackReturnCode iog_check_first_data_canary() {
   return OK;
 }
 
-ReturnCode iog_check_second_data_canary() {
+IogStackReturnCode iog_check_second_data_canary() {
   return OK;
 }

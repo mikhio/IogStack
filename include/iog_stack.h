@@ -1,13 +1,13 @@
 #ifndef IOG_STACK_H
 #define IOG_STACK_H
 
-#include "return_codes.h"
+#include "iog_stack_return_codes.h"
 
 /* @file iog_stack.h */
 
 /// Macros for calling functions and return error if isn't OK.
 #define IOG_RETURN_IF_ERROR(func) { \
-  ReturnCode err = func;            \
+  IogStackReturnCode err = func;            \
   if (err != OK)                    \
     return err;                     \
 }    
@@ -51,30 +51,30 @@ struct IogStack_t {
 
 //--------------------- PUBLIC FUNCTIONS --------------------------------------------
 
-ReturnCode iog_stack_init    (IogStack_t *stack); ///< Initialize stack
-ReturnCode iog_stack_destroy (IogStack_t *stack); ///< Free stack data from memory
+IogStackReturnCode iog_stack_init    (IogStack_t *stack); ///< Initialize stack
+IogStackReturnCode iog_stack_destroy (IogStack_t *stack); ///< Free stack data from memory
 
-ReturnCode iog_stack_push (IogStack_t *stack, iog_stack_value_t value);  ///< Add value to stack
-ReturnCode iog_stack_pop  (IogStack_t *stack, iog_stack_value_t *value); ///< Read and remove value from stack
+IogStackReturnCode iog_stack_push (IogStack_t *stack, iog_stack_value_t value);  ///< Add value to stack
+IogStackReturnCode iog_stack_pop  (IogStack_t *stack, iog_stack_value_t *value); ///< Read and remove value from stack
 
-ReturnCode iog_stack_peek (const IogStack_t *stack, iog_stack_value_t *value); ///< Read value from stack
+IogStackReturnCode iog_stack_peek (const IogStack_t *stack, iog_stack_value_t *value); ///< Read value from stack
                                                                                
 /// Print all stack info to stream (file)
-ReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream,
+IogStackReturnCode iog_stack_dump_f (const IogStack_t *stack, FILE *stream,
     const char *stk_name, const char *file_name, int line_num, const char *function_name);  
                                                                      
-ReturnCode iog_stack_dump   (const IogStack_t *stack);  ///< Print all stack info to stdin 
-ReturnCode iog_stack_verify (const IogStack_t *stack);  ///< Verify stack
+IogStackReturnCode iog_stack_dump   (const IogStack_t *stack);  ///< Print all stack info to stdin 
+IogStackReturnCode iog_stack_verify (const IogStack_t *stack);  ///< Verify stack
 
-ReturnCode iog_stack_update_canaries (IogStack_t *stack); ///< Calculates stack canaries
+IogStackReturnCode iog_stack_update_canaries (IogStack_t *stack); ///< Calculates stack canaries
 
 
 //--------------------- PRIVATE FUNCTIONS --------------------------------------------
 
 /// Reallocates data of stack
-static ReturnCode iog_stack_allocate_data (IogStack_t *stack, size_t new_capacity);
+static IogStackReturnCode iog_stack_allocate_data (IogStack_t *stack, size_t new_capacity);
 
-static ReturnCode iog_stack_allocate_more (IogStack_t *stack); ///< Allocates more memory for data
-static ReturnCode iog_stack_free_rest     (IogStack_t *stack); ///< Free all memory after stack size.
+static IogStackReturnCode iog_stack_allocate_more (IogStack_t *stack); ///< Allocates more memory for data
+static IogStackReturnCode iog_stack_free_rest     (IogStack_t *stack); ///< Free all memory after stack size.
 
 #endif // IOG_STACK_H

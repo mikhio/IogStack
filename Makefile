@@ -6,7 +6,7 @@ BUILD_DIR    := ./build
 APP_PATH     := ./build/iog_stack
 CCH_PATH     := ./cpp_cache
 
-SOURCES := $(wildcard $(SRC_PATH)/*.cpp)
+SOURCES := $(wildcard $(SRC_PATH)/*.cpp) main.cpp
 OBJECTS := $(addprefix $(CCH_PATH)/, $(patsubst %.cpp, %.o, $(SOURCES)))
 
 CXX_FLAGS := -D _DEBUG -ggdb3 -std=c++17 -O0 -Wall -Wextra -Weffc++ -Waggressive-loop-optimizations \
@@ -29,6 +29,10 @@ $(APP_PATH): $(OBJECTS)
 	$(CXX) $(CXX_FLAGS) $^ -o $(APP_PATH)
 
 $(CCH_PATH)/$(SRC_PATH)/%.o: $(SRC_PATH)/%.cpp Makefile
+	@mkdir -p $(@D)
+	$(CXX) -I$(INCLUDE_PATH) -c $< -o $@ 
+
+$(CCH_PATH)/main.o: main.cpp Makefile
 	@mkdir -p $(@D)
 	$(CXX) -I$(INCLUDE_PATH) -c $< -o $@ 
 
